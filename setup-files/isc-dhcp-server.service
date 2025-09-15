@@ -1,0 +1,22 @@
+[Unit]
+Description=ISC DHCP IPv4 server
+After=network-online.target
+After=hostapd.service
+ConditionPathExists=/etc/default/isc-dhcp-server
+ConditionPathExists=|/etc/ltsp/dhcpd.conf
+ConditionPathExists=|/etc/dhcp/dhcpd.conf
+
+[Service]
+EnvironmentFile=/etc/default/isc-dhcp-server
+RuntimeDirectory=dhcp-server
+ExecStart=/bin/sh -ec '\
+    CONFIG_FILE=/etc/dhcp/dhcpd.conf; \
+    [ -e /var/lib/dhcp/dhcpd.leases ] || touch /var/lib/dhcp/dhcpd.leases; \
+    chown root:dhcpd /var/lib/dhcp /var/lib/dhcp/dhcpd.leases; \
+    chmod 775 /var/lib/dhcp ; chmod 664 /var/lib/dhcp/dhcpd.leases; \
+    exec dhcpd -user dhcpd -group dhcpd -f -4 -pf /run/dhcp-server/dhcpd.pid -cf $CONFIG_FILE $INTERFACESv4'
+ExecStartPre=sleep 5
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

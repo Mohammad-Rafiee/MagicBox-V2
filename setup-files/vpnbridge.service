@@ -1,0 +1,14 @@
+[Unit]
+Description=SoftEther VPN Bridge
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/vpnbridge/vpnbridge start
+ExecStop=/usr/local/vpnbridge/vpnbridge stop
+User=root
+Group=root
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

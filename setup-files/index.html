@@ -1,0 +1,67 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WiFi Configuration</title>
+    <style>
+        .error { 
+            color: red; 
+            background: #ffeeee; 
+            padding: 10px; 
+            border: 1px solid red; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            text-align: center;
+        }
+        form { 
+            max-width: 400px; 
+            margin: 2rem auto; 
+            padding: 20px; 
+            border: 1px solid #ccc; 
+            border-radius: 10px; 
+            background: #f9f9f9;
+        }
+        input { 
+            margin: 0.5rem 0; 
+            display: block; 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px;
+        }
+        button { 
+            margin-top: 1rem; 
+            padding: 10px 15px; 
+            width: 100%; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">WiFi Setup</h1>
+
+    <form action="/configure" method="post">
+        <!-- Show error message only if it exists -->
+        {% if error_message %}
+        <p class="error">{{ error_message }}</p>
+        {% endif %}
+
+        <div>
+            <label for="ssid">SSID:</label>
+            <input type="text" id="ssid" name="ssid" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">Connect</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[Unit]
+Description=WiFi Configurator Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/wifi-setup
+ExecStart=/opt/wifi-setup/.venv/bin/python /opt/wifi-setup/wifi_config.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
