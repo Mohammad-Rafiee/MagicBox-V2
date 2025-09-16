@@ -18,10 +18,10 @@ CASCADE_USER="TUN"
 BRIDGE_HUB="Bridge"
 ETH_DEVICE="eth0"
 
-SE_VERSION="v4.44-9807-rtm"
-SE_DATE="2025.04.16"
-SE_FILE="softether-vpnbridge-${SE_VERSION}-${SE_DATE}-linux-x64-64bit.tar.gz"
-SE_URL="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/${SE_VERSION}/${SE_FILE}"
+# SE_VERSION="v4.44-9807-rtm"
+# SE_DATE="2025.04.16"
+# SE_FILE="softether-vpnbridge-${SE_VERSION}-${SE_DATE}-linux-x64-64bit.tar.gz"
+# SE_URL="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/${SE_VERSION}/${SE_FILE}"
 INSTALL_DIR="/usr/local/vpnbridge"
 
 # --- Determine script directory for relative file paths ---
@@ -29,7 +29,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- Update & Install dependencies ---
 echo "[*] Updating system and installing build tools..."
-sudo apt update && sudo apt install -y build-essential gnupg2 gcc make wget git isc-dhcp-server python3 python3-venv
+sudo apt update && sudo apt install -y build-essential gnupg2 gcc make wget git isc-dhcp-server python3 python3-venv avahi-daemon
+
+# === Detect architecture and set SoftEther package variables ===
+ARCH=$(uname -m)
+echo "[*] Detected architecture: ${ARCH}"
+
+if [[ "${ARCH}" == "x86_64" ]]; then
+    SE_FILE="softether-vpnbridge-v4.44-9807-rtm-2025.04.16-linux-x64-64bit.tar.gz"
+    SE_URL="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.44-9807-rtm/${SE_FILE}"
+elif [[ "${ARCH}" == "aarch64" || "${ARCH}" == "arm64" ]]; then
+    SE_FILE="softether-vpnbridge-v4.44-9807-rtm-2025.04.16-linux-arm64-64bit.tar.gz"
+    SE_URL="https://github.com/SoftEtherVPN/SoftEtherVPN_Stable/releases/download/v4.44-9807-rtm/${SE_FILE}"
+else
+    echo "❌ Unsupported architecture: ${ARCH}. Exiting."
+    exit 1
+fi
 
 # --- Check and Download SoftEther VPN Bridge if needed ---
 if [ -f "${SCRIPT_DIR}/${SE_FILE}" ]; then
@@ -47,6 +62,16 @@ echo "[*] Building SoftEther VPN Bridge..."
 make
 cd ..
 
+# --- Detect if SoftEther installation exists ---
+if [ -x "${INSTALL_DIR}/vpnbridge" ]; then
+    echo "[*] SoftEther VPN Bridge installed."
+    set_password_needed=false
+else
+    echo "[*] SoftEther VPN Bridge not installed."
+    set_password_needed=true
+fi
+
+
 # --- Install to /usr/local ---
 echo "[*] Installing to ${INSTALL_DIR}..."
 if [ -d "${INSTALL_DIR}" ]; then
@@ -56,14 +81,6 @@ fi
 sudo mv vpnbridge "${INSTALL_DIR}"
 cd "${INSTALL_DIR}"
 
-# --- Detect if SoftEther installation exists ---
-if [ -x "${INSTALL_DIR}/vpnbridge" ]; then
-    echo "[*] SoftEther VPN Bridge installed."
-    set_password_needed=false
-else
-    echo "[*] SoftEther VPN Bridge not installed."
-    set_password_needed=true
-fi
 
 # --- Set Permissions ---
 echo "[*] Setting permissions..."
